@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0f172a">
+    <title>🔐 Admin Dashboard - Anonyme Nachrichten</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            background: linear-gradient(165deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Glass Effects */
+        .glass-card {
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-input {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1.5px solid rgba(148, 163, 184, 0.2);
+            color: #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .glass-input:focus {
+            background: rgba(30, 41, 59, 0.95);
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translate3d(0, 20px, 0);
+            }
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
+            }
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.4s ease backwards;
+        }
+
+        /* Premium Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translate3d(0, -2px, 0);
+            box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger:hover {
+            transform: translate3d(0, -2px, 0);
+            box-shadow: 0 15px 35px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-purple {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            box-shadow: 0 10px 25px rgba(139, 92, 246, 0.3);
+        }
+
+        /* Sentiment Badges */
+        .badge-positive {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+        }
+
+        .badge-negative {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .badge-neutral {
+            background: rgba(148, 163, 184, 0.15);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            color: #cbd5e1;
+        }
+
+        /* Message Cards */
+        .message-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .message-card:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(148, 163, 184, 0.2);
+            transform: translate3d(0, -2px, 0);
+        }
+
+        .message-card.starred {
+            border-color: rgba(245, 158, 11, 0.5);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .message-card.spam {
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        /* Story Mode Card */
+        .story-card {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border-radius: 24px;
+            padding: 40px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .story-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse-glow 4s ease-in-out infinite;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Loading */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: slideInRight 0.3s ease;
+            max-width: 90vw;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translate3d(400px, 0, 0);
+                opacity: 0;
+            }
+            to {
+                transform: translate3d(0, 0, 0);
+                opacity: 1;
+            }
+        }
+
+        /* Tabs */
+        .tab-btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            background: transparent;
+            border: 1px solid transparent;
+        }
+
+        .tab-btn.active {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: rgba(148, 163, 184, 0.05);
+        }
+
+        /* Checkbox */
+        .custom-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(148, 163, 184, 0.3);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .custom-checkbox:checked {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-color: #3b82f6;
+        }
+
+        /* Detective Mode */
+        .metadata-reveal {
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .metadata-reveal.visible {
+            display: block;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.5);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.5);
+        }
+    </style>
+</head>
+<body class="p-4">
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center">
+        <div class="glass-card rounded-3xl p-10 max-w-md w-full animate-slide-in">
+            <div class="text-center mb-8">
+                <div class="text-6xl mb-4">🔐</div>
+                <h1 class="text-4xl font-black text-white mb-2">Admin Panel</h1>
+                <p class="text-slate-400">Authentifizierung erforderlich</p>
+            </div>
+            
+            <form onsubmit="login(event)" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-300 mb-2">Passwort</label>
+                    <input 
+                        type="password" 
+                        id="passwordInput" 
+                        placeholder="Admin-Passwort eingeben"
+                        class="glass-input w-full px-5 py-4 rounded-xl text-lg"
+                        autocomplete="off"
+                    >
+                </div>
+                
+                <button 
+                    type="submit"
+                    class="btn-primary w-full py-4 rounded-xl font-bold text-lg text-white"
+                >
+                    🚀 Einloggen
+                </button>
+            </form>
+            
+            <p id="errorMessage" class="text-red-400 text-center mt-4 hidden font-medium"></p>
+        </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD -->
+    <div id="adminDashboard" class="hidden max-w-7xl mx-auto">
+        
+        <!-- Header -->
+        <div class="glass-card rounded-3xl p-6 mb-6 animate-slide-in">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-black text-white mb-2">
+                        📊 Admin Dashboard
+                    </h1>
+                    <p class="text-slate-400">Verwaltung anonymer Nachrichten</p>
+                </div>
+                <div class="flex gap-3">
+                    <button 
+                        onclick="refreshData()"
+                        class="btn-success px-6 py-3 rounded-xl font-bold text-white flex items-center gap-2"
+                    >
+                        🔄 <span class="hidden md:inline">Aktualisieren</span>
+                    </button>
+                    <button 
+                        onclick="logout()"
+                        class="btn-danger px-6 py-3 rounded-xl font-bold text-white flex items-center gap-2"
+                    >
+                        🚪 <span class="hidden md:inline">Logout</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="statsGrid">
+            <!-- Stats will be loaded here -->
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="glass-card rounded-3xl p-6 animate-slide-in" style="animation-delay: 0.1s">
+                <h2 class="text-xl font-bold text-white mb-4">📈 Sentiment-Verteilung</h2>
+                <div class="chart-container">
+                    <canvas id="sentimentChart"></canvas>
+                </div>
+            </div>
+            <div class="glass-card rounded-3xl p-6 animate-slide-in" style="animation-delay: 0.2s">
+                <h2 class="text-xl font-bold text-white mb-4">📊 Nachrichten pro Tag</h2>
+                <div class="chart-container">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters & Actions -->
+        <div class="glass-card rounded-3xl p-6 mb-6 animate-slide-in" style="animation-delay: 0.3s">
+            <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="filterMessages('all')" class="tab-btn active" data-filter="all">
+                        Alle
+                    </button>
+                    <button onclick="filterMessages('starred')" class="tab-btn" data-filter="starred">
+                        ⭐ Favoriten
+                    </button>
+                    <button onclick="filterMessages('positive')" class="tab-btn" data-filter="positive">
+                        😊 Positiv
+                    </button>
+                    <button onclick="filterMessages('negative')" class="tab-btn" data-filter="negative">
+                        😢 Negativ
+                    </button>
+                    <button onclick="filterMessages('spam')" class="tab-btn" data-filter="spam">
+                        🚫 Spam
+                    </button>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button 
+                        id="bulkActionsBtn"
+                        onclick="toggleBulkMode()"
+                        class="btn-purple px-4 py-2 rounded-lg font-semibold text-white text-sm"
+                    >
+                        ☑️ Massenaktionen
+                    </button>
+                    <button 
+                        id="storyModeBtn"
+                        onclick="toggleStoryMode()"
+                        class="btn-warning px-4 py-2 rounded-lg font-semibold text-white text-sm"
+                    >
+                        📸 Story-Modus
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bulk Actions Bar (Hidden by default) -->
+            <div id="bulkActionsBar" class="hidden mt-4 pt-4 border-t border-slate-700">
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="bulkAction('star')" class="btn-warning px-4 py-2 rounded-lg text-sm font-semibold text-white">
+                        ⭐ Favorisieren
+                    </button>
+                    <button onclick="bulkAction('archive')" class="btn-purple px-4 py-2 rounded-lg text-sm font-semibold text-white">
+                        📦 Archivieren
+                    </button>
+                    <button onclick="bulkAction('delete')" class="btn-danger px-4 py-2 rounded-lg text-sm font-semibold text-white">
+                        🗑️ Löschen
+                    </button>
+                    <span class="text-slate-400 text-sm py-2 px-3 bg-slate-800/50 rounded-lg">
+                        <span id="selectedCount">0</span> ausgewählt
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages Container -->
+        <div class="glass-card rounded-3xl p-6 animate-slide-in" style="animation-delay: 0.4s">
+            <h2 class="text-2xl font-bold text-white mb-6">💬 Nachrichten</h2>
+            
+            <div id="loadingSpinner" class="text-center py-12">
+                <div class="spinner mx-auto mb-4"></div>
+                <p class="text-slate-400">Lade Nachrichten...</p>
+            </div>
+
+            <div id="messagesContainer" class="space-y-4 hidden">
+                <!-- Messages will be loaded here -->
+            </div>
+
+            <div id="emptyState" class="text-center py-12 hidden">
+                <div class="text-6xl mb-4">📭</div>
+                <p class="text-xl text-slate-400">Keine Nachrichten gefunden</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // =====================================
+        // 🌐 GLOBAL STATE
+        // =====================================
+        
+        let currentPassword = '';
+        let allMessages = [];
+        let filteredMessages = [];
+        let currentFilter = 'all';
+        let bulkModeActive = false;
+        let selectedMessages = new Set();
+        let storyModeActive = false;
+        let sentimentChart = null;
+        let timelineChart = null;
+
+        // =====================================
+        // 🔐 AUTHENTICATION
+        // =====================================
+        
+        function login(event) {
+            event.preventDefault();
+            const password = document.getElementById('passwordInput').value;
+            const errorMsg = document.getElementById('errorMessage');
+
+            if (password === '19105887638') { // ÄNDERN SIE DIES!
+                currentPassword = password;
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('adminDashboard').classList.remove('hidden');
+                loadAllData();
+            } else {
+                errorMsg.textContent = '❌ Falsches Passwort!';
+                errorMsg.classList.remove('hidden');
+                setTimeout(() => {
+                    errorMsg.classList.add('hidden');
+                }, 3000);
+            }
+        }
+
+        function logout() {
+            if (confirm('Wirklich ausloggen?')) {
+                currentPassword = '';
+                selectedMessages.clear();
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('adminDashboard').classList.add('hidden');
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+
+        // =====================================
+        // 📊 DATA LOADING
+        // =====================================
+        
+        async function loadAllData() {
+            await loadMessages();
+            updateStats();
+            updateCharts();
+        }
+
+        async function loadMessages(filter = 'all') {
+            try {
+                document.getElementById('loadingSpinner').classList.remove('hidden');
+                document.getElementById('messagesContainer').classList.add('hidden');
+                document.getElementById('emptyState').classList.add('hidden');
+
+                const url = filter === 'all' 
+                    ? `/api/messages?password=${currentPassword}` 
+                    : `/api/messages?password=${currentPassword}&filter=${filter}`;
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.success) {
+                    allMessages = data.messages;
+                    filteredMessages = data.messages;
+                    displayMessages(filteredMessages);
+                } else {
+                    throw new Error(data.error || 'Fehler beim Laden');
+                }
+            } catch (error) {
+                console.error('Load error:', error);
+                showToast('❌ Fehler beim Laden: ' + error.message, 'error');
+            } finally {
+                document.getElementById('loadingSpinner').classList.add('hidden');
+            }
+        }
+
+        async function refreshData() {
+            showToast('🔄 Daten werden aktualisiert...', 'info');
+            await loadAllData();
+            showToast('✅ Daten aktualisiert!', 'success');
+        }
+
+        // =====================================
+        // 📈 STATISTICS
+        // =====================================
+        
+        function updateStats() {
+            const total = allMessages.length;
+            const today = allMessages.filter(m => {
+                const msgDate = new Date(m.created_at);
+                const now = new Date();
+                return msgDate.toDateString() === now.toDateString();
+            }).length;
+
+            const starred = allMessages.filter(m => m.is_starred).length;
+            const spam = allMessages.filter(m => m.is_spam).length;
+
+            const statsHTML = `
+                <div class="glass-card rounded-2xl p-5 text-center">
+                    <div class="text-4xl mb-2">📨</div>
+                    <div class="text-2xl font-bold text-white">${total}</div>
+                    <div class="text-xs text-slate-400">Gesamt</div>
+                </div>
+                <div class="glass-card rounded-2xl p-5 text-center">
+                    <div class="text-4xl mb-2">📅</div>
+                    <div class="text-2xl font-bold text-white">${today}</div>
+                    <div class="text-xs text-slate-400">Heute</div>
+                </div>
+                <div class="glass-card rounded-2xl p-5 text-center">
+                    <div class="text-4xl mb-2">⭐</div>
+                    <div class="text-2xl font-bold text-white">${starred}</div>
+                    <div class="text-xs text-slate-400">Favoriten</div>
+                </div>
+                <div class="glass-card rounded-2xl p-5 text-center">
+                    <div class="text-4xl mb-2">🚫</div>
+                    <div class="text-2xl font-bold text-white">${spam}</div>
+                    <div class="text-xs text-slate-400">Spam</div>
+                </div>
+            `;
+
+            document.getElementById('statsGrid').innerHTML = statsHTML;
+        }
+
+        // =====================================
+        // 📊 CHARTS
+        // =====================================
+        
+        function updateCharts() {
+            updateSentimentChart();
+            updateTimelineChart();
+        }
+
+        function updateSentimentChart() {
+            const positive = allMessages.filter(m => m.sentiment === 'positive').length;
+            const negative = allMessages.filter(m => m.sentiment === 'negative').length;
+            const neutral = allMessages.filter(m => m.sentiment === 'neutral').length;
+
+            const ctx = document.getElementById('sentimentChart').getContext('2d');
+            
+            if (sentimentChart) {
+                sentimentChart.destroy();
+            }
+
+            sentimentChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Positiv', 'Negativ', 'Neutral'],
+                    datasets: [{
+                        data: [positive, negative, neutral],
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(148, 163, 184, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(239, 68, 68, 1)',
+                            'rgba(148, 163, 184, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#cbd5e1',
+                                font: { size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTimelineChart() {
+            // Get messages grouped by date (last 7 days)
+            const last7Days = [];
+            const counts = [];
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+                last7Days.push(dateStr);
+                
+                const count = allMessages.filter(m => {
+                    const msgDate = new Date(m.created_at);
+                    return msgDate.toDateString() === date.toDateString();
+                }).length;
+                counts.push(count);
+            }
+
+            const ctx = document.getElementById('timelineChart').getContext('2d');
+            
+            if (timelineChart) {
+                timelineChart.destroy();
+            }
+
+            timelineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: last7Days,
+                    datasets: [{
+                        label: 'Nachrichten',
+                        data: counts,
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#cbd5e1',
+                                stepSize: 1
+                            },
+                            grid: {
+                                color: 'rgba(148, 163, 184, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#cbd5e1'
+                            },
+                            grid: {
+                                color: 'rgba(148, 163, 184, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // =====================================
+        // 💬 MESSAGE DISPLAY (CONTINUED IN NEXT FILE DUE TO LENGTH)
+        // =====================================
+        
+        function displayMessages(messages) {
+            const container = document.getElementById('messagesContainer');
+            
+            if (messages.length === 0) {
+                container.classList.add('hidden');
+                document.getElementById('emptyState').classList.remove('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+
+            container.innerHTML = messages.map((msg, index) => createMessageHTML(msg, index, messages.length)).join('');
+        }
+
+        function createMessageHTML(msg, index, total) {
+            const date = new Date(msg.created_at);
+            const formattedDate = date.toLocaleString('de-DE');
+            const sentiment = msg.sentiment || 'neutral';
+            const tags = msg.tags || [];
+            const isStarred = msg.is_starred || false;
+            const isSpam = msg.is_spam || false;
+            
+            const sentimentBadge = sentiment === 'positive' ? 'badge-positive' : 
+                                 sentiment === 'negative' ? 'badge-negative' : 'badge-neutral';
+            
+            const sentimentIcon = sentiment === 'positive' ? '😊' : 
+                                sentiment === 'negative' ? '😢' : '😐';
+
+            const cardClass = isStarred ? 'message-card starred' : 
+                            isSpam ? 'message-card spam' : 'message-card';
+
+            return `
+                <div class="${cardClass} rounded-2xl p-6" id="msg-${msg.id}">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-3 flex-wrap">
+                            ${bulkModeActive ? `
+                                <input 
+                                    type="checkbox" 
+                                    class="custom-checkbox"
+                                    onchange="toggleMessageSelection('${msg.id}')"
+                                    ${selectedMessages.has(msg.id) ? 'checked' : ''}
+                                >
+                            ` : ''}
+                            <span class="text-slate-400 text-sm mono">#${total - index}</span>
+                            <span class="${sentimentBadge} px-3 py-1 rounded-full text-xs font-semibold">
+                                ${sentimentIcon} ${sentiment}
+                            </span>
+                            ${isStarred ? '<span class="text-yellow-400 text-xl">⭐</span>' : ''}
+                            ${isSpam ? '<span class="text-red-400 text-sm">🚫 SPAM</span>' : ''}
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="toggleStar('${msg.id}', ${!isStarred})" class="p-2 hover:bg-slate-700/50 rounded-lg" title="${isStarred ? 'Entfavorisieren' : 'Favorisieren'}">
+                                ${isStarred ? '⭐' : '☆'}
+                            </button>
+                            <button onclick="downloadMessageImage('${msg.id}')" class="p-2 hover:bg-slate-700/50 rounded-lg" title="Als Bild">📸</button>
+                            <button onclick="toggleDetectiveMode('${msg.id}')" class="p-2 hover:bg-slate-700/50 rounded-lg" title="Detektiv">🔍</button>
+                            <button onclick="deleteMessage('${msg.id}')" class="p-2 hover:bg-red-600/50 rounded-lg" title="Löschen">🗑️</button>
+                        </div>
+                    </div>
+
+                    <div class="text-white text-lg leading-relaxed mb-4">${escapeHtml(msg.message)}</div>
+
+                    ${tags.length > 0 ? `<div class="flex flex-wrap gap-2 mb-4">${tags.map(tag => `<span class="bg-slate-700/50 px-3 py-1 rounded-lg text-xs text-slate-300">🏷️ ${tag}</span>`).join('')}</div>` : ''}
+
+                    <div class="flex justify-between items-center text-sm text-slate-400 border-t border-slate-700 pt-4">
+                        <span>📅 ${formattedDate}</span>
+                        <span>📏 ${msg.character_count} Zeichen</span>
+                    </div>
+
+                    <div id="metadata-${msg.id}" class="metadata-reveal mt-4 pt-4 border-t border-slate-700">
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                            ${msg.battery_level ? `<div class="bg-slate-800/50 p-3 rounded-lg"><div class="text-slate-500 text-xs mb-1">🔋 Akku</div><div class="text-white font-semibold">${msg.battery_level}%</div></div>` : ''}
+                            ${msg.device_type ? `<div class="bg-slate-800/50 p-3 rounded-lg"><div class="text-slate-500 text-xs mb-1">📱 Gerät</div><div class="text-white font-semibold">${msg.device_type}</div></div>` : ''}
+                            ${msg.browser ? `<div class="bg-slate-800/50 p-3 rounded-lg"><div class="text-slate-500 text-xs mb-1">🌐 Browser</div><div class="text-white font-semibold">${msg.browser}</div></div>` : ''}
+                            ${msg.os ? `<div class="bg-slate-800/50 p-3 rounded-lg"><div class="text-slate-500 text-xs mb-1">💻 OS</div><div class="text-white font-semibold">${msg.os}</div></div>` : ''}
+                            ${msg.timezone ? `<div class="bg-slate-800/50 p-3 rounded-lg"><div class="text-slate-500 text-xs mb-1">🌍 Zeitzone</div><div class="text-white font-semibold">${msg.timezone}</div></div>` : ''}
+                            ${msg.screen_resolution ? `<div class="bg-slate-800/50 p-3 rounded-lg"><div class="text-slate-500 text-xs mb-1">📺 Auflösung</div><div class="text-white font-semibold">${msg.screen_resolution}</div></div>` : ''}
+                        </div>
+                        ${msg.ip_hash ? `<div class="mt-3 bg-amber-500/10 border border-amber-500/20 p-3 rounded-lg"><div class="text-amber-400 text-xs font-semibold mb-1">🔒 IP Hash</div><div class="text-amber-300 text-xs mono break-all">${msg.ip_hash}</div><button onclick="blockIP('${msg.ip_hash}')" class="mt-2 bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded font-semibold">🚫 IP sperren</button></div>` : ''}
+                    </div>
+
+                    <div id="story-${msg.id}" class="story-card hidden" style="width: 600px;"><div class="relative z-10"><div class="text-white/80 text-sm mb-2">💬 Anonyme Nachricht</div><div class="text-white text-xl font-medium mb-4 leading-relaxed">${escapeHtml(msg.message)}</div><div class="flex justify-between items-center text-white/60 text-sm"><span>📅 ${date.toLocaleDateString('de-DE')}</span><span>${sentimentIcon} ${sentiment}</span></div></div></div>
+                </div>
+            `;
+        }
+
+        async function toggleStar(messageId, starred) {
+            try {
+                const response = await fetch(`/api/messages?password=${currentPassword}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'star', messageId, data: { starred } })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast(starred ? '⭐ Favorisiert!' : '☆ Entfavorisiert!', 'success');
+                    await loadMessages(currentFilter);
+                    updateStats();
+                }
+            } catch (error) {
+                showToast('❌ Fehler: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteMessage(messageId) {
+            if (!confirm('Nachricht wirklich löschen?')) return;
+            try {
+                const response = await fetch(`/api/messages?password=${currentPassword}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ messageId })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('🗑️ Gelöscht!', 'success');
+                    await loadMessages(currentFilter);
+                    updateStats();
+                    updateCharts();
+                }
+            } catch (error) {
+                showToast('❌ Fehler: ' + error.message, 'error');
+            }
+        }
+
+        function toggleDetectiveMode(messageId) {
+            document.getElementById(`metadata-${messageId}`).classList.toggle('visible');
+        }
+
+        async function blockIP(ipHash) {
+            if (!confirm('IP-Adresse sperren?')) return;
+            showToast('🚫 IP-Sperrung (TODO)', 'warning');
+        }
+
+        async function downloadMessageImage(messageId) {
+            const storyCard = document.getElementById(`story-${messageId}`);
+            storyCard.classList.remove('hidden');
+            try {
+                const canvas = await html2canvas(storyCard, { backgroundColor: null, scale: 2, logging: false });
+                storyCard.classList.add('hidden');
+                canvas.toBlob(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.download = `nachricht-${new Date().getTime()}.jpg`;
+                    link.href = url;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                }, 'image/jpeg', 0.95);
+                showToast('📸 Bild gespeichert!', 'success');
+            } catch (error) {
+                showToast('❌ Screenshot fehlgeschlagen', 'error');
+                storyCard.classList.add('hidden');
+            }
+        }
+
+        async function filterMessages(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+            await loadMessages(filter);
+        }
+
+        function toggleBulkMode() {
+            bulkModeActive = !bulkModeActive;
+            document.getElementById('bulkActionsBar').classList.toggle('hidden');
+            document.getElementById('bulkActionsBtn').classList.toggle('bg-purple-600');
+            if (!bulkModeActive) selectedMessages.clear();
+            displayMessages(filteredMessages);
+            updateSelectedCount();
+        }
+
+        function toggleMessageSelection(messageId) {
+            selectedMessages.has(messageId) ? selectedMessages.delete(messageId) : selectedMessages.add(messageId);
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            document.getElementById('selectedCount').textContent = selectedMessages.size;
+        }
+
+        async function bulkAction(action) {
+            if (selectedMessages.size === 0) return showToast('⚠️ Keine Auswahl', 'warning');
+            const messageIds = Array.from(selectedMessages);
+            if (action === 'delete') {
+                if (!confirm(`${messageIds.length} löschen?`)) return;
+                try {
+                    const response = await fetch(`/api/messages?password=${currentPassword}`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ messageIds })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        showToast('🗑️ Gelöscht!', 'success');
+                        selectedMessages.clear();
+                        await loadMessages(currentFilter);
+                        updateStats();
+                        updateCharts();
+                        updateSelectedCount();
+                    }
+                } catch (error) {
+                    showToast('❌ Fehler', 'error');
+                }
+            } else {
+                showToast('🚧 TODO', 'warning');
+            }
+        }
+
+        function toggleStoryMode() {
+            storyModeActive = !storyModeActive;
+            document.getElementById('storyModeBtn').classList.toggle('bg-amber-600');
+            showToast(storyModeActive ? '📸 Story-Modus ON' : '📸 Story-Modus OFF', 'info');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showToast(message, type = 'info') {
+            const colors = {
+                success: 'border-green-500/30 text-green-300',
+                error: 'border-red-500/30 text-red-300',
+                warning: 'border-amber-500/30 text-amber-300',
+                info: 'border-blue-500/30 text-blue-300'
+            };
+            const toast = document.createElement('div');
+            toast.className = `toast ${colors[type]}`;
+            toast.innerHTML = `<div class="font-semibold">${message}</div>`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

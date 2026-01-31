@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Senden Sie anonyme Nachrichten - Sicher, schnell und vertraulich">
+    <meta name="theme-color" content="#0f172a">
+    <title>💬 Anonyme Nachrichten | Sicher & Vertraulich</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            background: linear-gradient(165deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Premium Dark Glass Effect - NO BLUR */
+        .glass-card {
+            background: rgba(15, 23, 42, 0.92);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .glass-input {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1.5px solid rgba(148, 163, 184, 0.2);
+            color: #e2e8f0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-input:focus {
+            background: rgba(30, 41, 59, 0.95);
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 
+                0 0 0 3px rgba(59, 130, 246, 0.1),
+                0 10px 30px rgba(59, 130, 246, 0.2);
+            outline: none;
+        }
+
+        /* High-Performance Animations */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translate3d(0, 30px, 0);
+            }
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
+            }
+        }
+
+        .animate-slide-up {
+            animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+            will-change: transform, opacity;
+        }
+
+        .premium-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            box-shadow: 
+                0 10px 30px rgba(59, 130, 246, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+
+        .premium-btn:hover {
+            transform: translate3d(0, -2px, 0);
+            box-shadow: 
+                0 15px 40px rgba(59, 130, 246, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        .premium-btn:active {
+            transform: translate3d(0, 0, 0);
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            height: 4px;
+            background: rgba(59, 130, 246, 0.2);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+
+        /* Character Counter */
+        .char-counter {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .char-counter.warning {
+            color: #f59e0b;
+        }
+
+        .char-counter.danger {
+            color: #ef4444;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: slideInRight 0.3s ease;
+            max-width: 90vw;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translate3d(400px, 0, 0);
+                opacity: 0;
+            }
+            to {
+                transform: translate3d(0, 0, 0);
+                opacity: 1;
+            }
+        }
+
+        /* Pulse Animation */
+        @keyframes pulse-scale {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .pulse-animation {
+            animation: pulse-scale 2s ease-in-out infinite;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 640px) {
+            .glass-card {
+                border-radius: 20px;
+            }
+            
+            textarea {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+        }
+
+        /* Decorative Elements */
+        .deco-circle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        .deco-1 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
+            top: -200px;
+            right: -100px;
+        }
+
+        .deco-2 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, #8b5cf6 0%, transparent 70%);
+            bottom: -100px;
+            left: -50px;
+        }
+
+        /* Stats Cards */
+        .stat-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(148, 163, 184, 0.2);
+            transform: translate3d(0, -2px, 0);
+        }
+
+        /* Inspiration Button */
+        .inspiration-btn {
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .inspiration-btn:hover {
+            background: rgba(139, 92, 246, 0.25);
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        /* Voice Button */
+        .voice-btn {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .voice-btn:hover {
+            background: rgba(239, 68, 68, 0.25);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+
+        .voice-btn.recording {
+            animation: pulse-glow 1.5s ease-in-out infinite;
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Decorative Background Elements -->
+    <div class="deco-circle deco-1"></div>
+    <div class="deco-circle deco-2"></div>
+
+    <!-- Main Container -->
+    <div class="min-h-screen flex items-center justify-center p-4 relative z-10">
+        <div class="w-full max-w-2xl">
+            
+            <!-- Header -->
+            <div class="text-center mb-8 animate-slide-up" style="animation-delay: 0.1s">
+                <div class="text-6xl mb-4">💬</div>
+                <h1 class="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight">
+                    Anonyme Nachrichten
+                </h1>
+                <p class="text-slate-400 text-lg">
+                    Sicher, schnell und vollständig vertraulich
+                </p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 animate-slide-up" style="animation-delay: 0.2s">
+                <div class="stat-card rounded-xl p-4 text-center">
+                    <div class="text-2xl mb-1">📨</div>
+                    <div class="text-xl font-bold text-white" id="totalMessages">---</div>
+                    <div class="text-xs text-slate-400">Nachrichten</div>
+                </div>
+                <div class="stat-card rounded-xl p-4 text-center">
+                    <div class="text-2xl mb-1">👥</div>
+                    <div class="text-xl font-bold text-white" id="onlineUsers">---</div>
+                    <div class="text-xs text-slate-400">Online</div>
+                </div>
+                <div class="stat-card rounded-xl p-4 text-center">
+                    <div class="text-2xl mb-1">⚡</div>
+                    <div class="text-xl font-bold text-white" id="avgLength">---</div>
+                    <div class="text-xs text-slate-400">Ø Länge</div>
+                </div>
+                <div class="stat-card rounded-xl p-4 text-center">
+                    <div class="text-2xl mb-1">🔒</div>
+                    <div class="text-xl font-bold text-white">100%</div>
+                    <div class="text-xs text-slate-400">Sicher</div>
+                </div>
+            </div>
+
+            <!-- Main Card -->
+            <div class="glass-card rounded-3xl p-6 md:p-8 animate-slide-up" style="animation-delay: 0.3s">
+                
+                <!-- Form -->
+                <form id="messageForm" class="space-y-6">
+                    
+                    <!-- Textarea -->
+                    <div>
+                        <label for="messageInput" class="block text-sm font-semibold text-slate-300 mb-3">
+                            📝 Ihre anonyme Nachricht
+                        </label>
+                        <textarea
+                            id="messageInput"
+                            rows="6"
+                            maxlength="300"
+                            placeholder="Schreiben Sie hier Ihre Nachricht... (5-300 Zeichen)"
+                            class="glass-input w-full px-5 py-4 rounded-2xl resize-none text-base leading-relaxed placeholder-slate-500"
+                        ></textarea>
+                        
+                        <!-- Character Counter & Progress -->
+                        <div class="mt-3 space-y-2">
+                            <div class="progress-bar rounded-full">
+                                <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-slate-400">Mindestens 5 Zeichen</span>
+                                <span class="char-counter text-slate-300" id="charCounter">0 / 300</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <button
+                            type="button"
+                            id="inspirationBtn"
+                            class="inspiration-btn px-5 py-3 rounded-xl font-semibold text-purple-300 flex items-center justify-center gap-2 transition-all"
+                        >
+                            <span class="text-xl">💡</span>
+                            <span>Inspiration</span>
+                        </button>
+                        <button
+                            type="button"
+                            id="voiceBtn"
+                            class="voice-btn px-5 py-3 rounded-xl font-semibold text-red-300 flex items-center justify-center gap-2 transition-all"
+                        >
+                            <span class="text-xl" id="voiceIcon">🎤</span>
+                            <span id="voiceText">Sprechen</span>
+                        </button>
+                    </div>
+
+                    <!-- Send Button -->
+                    <button
+                        type="submit"
+                        id="sendBtn"
+                        class="premium-btn w-full py-5 rounded-2xl font-bold text-lg text-white flex items-center justify-center gap-3"
+                    >
+                        <span class="text-2xl">🚀</span>
+                        <span>Nachricht senden</span>
+                    </button>
+
+                    <!-- Rate Limit Info -->
+                    <div id="rateLimitInfo" class="hidden">
+                        <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-center">
+                            <div class="text-amber-400 font-semibold mb-2">
+                                ⏱️ Bitte warten Sie noch <span id="waitTime">30</span> Sekunden
+                            </div>
+                            <div class="progress-bar rounded-full">
+                                <div id="rateLimitProgress" class="progress-fill bg-amber-500" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center mt-8 space-y-3 animate-slide-up" style="animation-delay: 0.4s">
+                <div class="flex items-center justify-center gap-6 text-sm text-slate-400">
+                    <a href="#" class="hover:text-slate-300 transition-colors flex items-center gap-1">
+                        <span>🔒</span>
+                        <span>Datenschutz</span>
+                    </a>
+                    <a href="#" class="hover:text-slate-300 transition-colors flex items-center gap-1">
+                        <span>📄</span>
+                        <span>Nutzungsbedingungen</span>
+                    </a>
+                    <a href="/mesajlar" class="hover:text-slate-300 transition-colors flex items-center gap-1">
+                        <span>🔑</span>
+                        <span>Admin</span>
+                    </a>
+                </div>
+                <p class="text-slate-500 text-xs">
+                    © 2026 Anonyme Nachrichten · Alle Rechte vorbehalten
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // =====================================
+        // 🎯 GLOBAL VARIABLES
+        // =====================================
+        
+        const messageInput = document.getElementById('messageInput');
+        const charCounter = document.getElementById('charCounter');
+        const progressFill = document.getElementById('progressFill');
+        const sendBtn = document.getElementById('sendBtn');
+        const messageForm = document.getElementById('messageForm');
+        const inspirationBtn = document.getElementById('inspirationBtn');
+        const voiceBtn = document.getElementById('voiceBtn');
+        const voiceIcon = document.getElementById('voiceIcon');
+        const voiceText = document.getElementById('voiceText');
+        const rateLimitInfo = document.getElementById('rateLimitInfo');
+
+        let isRecording = false;
+        let recognition = null;
+        let lastSentTime = localStorage.getItem('lastSentTime') || 0;
+
+        // =====================================
+        // 📊 LOAD STATS
+        // =====================================
+        
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('totalMessages').textContent = data.stats.totalMessages.toLocaleString('de-DE');
+                    document.getElementById('onlineUsers').textContent = data.stats.onlineUsers.toLocaleString('de-DE');
+                    document.getElementById('avgLength').textContent = data.stats.averageLength;
+                }
+            } catch (error) {
+                console.error('Stats error:', error);
+            }
+        }
+
+        // =====================================
+        // 💬 CHARACTER COUNTER
+        // =====================================
+        
+        messageInput.addEventListener('input', function() {
+            const length = this.value.length;
+            const percentage = (length / 300) * 100;
+            
+            charCounter.textContent = `${length} / 300`;
+            progressFill.style.width = `${percentage}%`;
+            
+            // Color feedback
+            charCounter.classList.remove('warning', 'danger');
+            if (length > 250) {
+                charCounter.classList.add('warning');
+            }
+            if (length > 290) {
+                charCounter.classList.add('danger');
+            }
+        });
+
+        // =====================================
+        // 💡 INSPIRATION BUTTON
+        // =====================================
+        
+        const inspirationQuestions = [
+            "Was war das Schönste, das dir heute passiert ist?",
+            "Wenn du eine Superkraft hättest, welche wäre es?",
+            "Was ist dein größter Traum?",
+            "Welches Buch hat dein Leben verändert?",
+            "Was würdest du deinem 10-jährigen Ich sagen?",
+            "Was ist deine geheime Leidenschaft?",
+            "Welcher Moment hat dich am meisten geprägt?",
+            "Was macht dich wirklich glücklich?",
+            "Wenn du die Zeit zurückdrehen könntest, was würdest du ändern?",
+            "Was ist deine größte Stärke?",
+            "Welchen Rat würdest du jemandem geben, der gerade kämpft?",
+            "Was ist das Mutigste, das du je getan hast?",
+            "Wovon träumst du nachts?",
+            "Was würdest du tun, wenn Geld keine Rolle spielen würde?",
+            "Welche Person hat dich am meisten inspiriert?"
+        ];
+
+        inspirationBtn.addEventListener('click', function() {
+            const randomQuestion = inspirationQuestions[Math.floor(Math.random() * inspirationQuestions.length)];
+            messageInput.value = randomQuestion;
+            messageInput.dispatchEvent(new Event('input'));
+            
+            // Haptic feedback
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+            
+            // Visual feedback
+            this.classList.add('pulse-animation');
+            setTimeout(() => {
+                this.classList.remove('pulse-animation');
+            }, 1000);
+        });
+
+        // =====================================
+        // 🎤 VOICE INPUT (SPEECH-TO-TEXT)
+        // =====================================
+        
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'de-DE'; // German
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onstart = function() {
+                isRecording = true;
+                voiceBtn.classList.add('recording');
+                voiceIcon.textContent = '⏺️';
+                voiceText.textContent = 'Hört zu...';
+                
+                if (navigator.vibrate) {
+                    navigator.vibrate([50, 100, 50]);
+                }
+            };
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                messageInput.value = transcript;
+                messageInput.dispatchEvent(new Event('input'));
+                showToast('✅ Spracheingabe erfolgreich!', 'success');
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                showToast('❌ Spracheingabe fehlgeschlagen', 'error');
+            };
+
+            recognition.onend = function() {
+                isRecording = false;
+                voiceBtn.classList.remove('recording');
+                voiceIcon.textContent = '🎤';
+                voiceText.textContent = 'Sprechen';
+            };
+
+            voiceBtn.addEventListener('click', function() {
+                if (isRecording) {
+                    recognition.stop();
+                } else {
+                    recognition.start();
+                }
+            });
+        } else {
+            voiceBtn.disabled = true;
+            voiceBtn.style.opacity = '0.5';
+            voiceBtn.title = 'Spracherkennung nicht verfügbar';
+        }
+
+        // =====================================
+        // 🚀 FORM SUBMISSION
+        // =====================================
+        
+        messageForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const message = messageInput.value.trim();
+            
+            // Validation
+            if (message.length < 5) {
+                showToast('⚠️ Nachricht muss mindestens 5 Zeichen lang sein', 'warning');
+                return;
+            }
+            
+            if (message.length > 300) {
+                showToast('⚠️ Nachricht darf maximal 300 Zeichen lang sein', 'warning');
+                return;
+            }
+
+            // Rate limiting check
+            const now = Date.now();
+            const timeDiff = now - lastSentTime;
+            if (timeDiff < 30000) {
+                const waitTime = Math.ceil((30000 - timeDiff) / 1000);
+                showRateLimitWarning(waitTime);
+                return;
+            }
+
+            // Disable button
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<div class="spinner"></div><span>Wird gesendet...</span>';
+            
+            // Haptic feedback
+            if (navigator.vibrate) {
+                navigator.vibrate(100);
+            }
+
+            try {
+                // Collect device metadata
+                const metadata = await collectMetadata();
+                
+                const response = await fetch('/api/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        metadata: metadata
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('✅ Nachricht erfolgreich gesendet!', 'success');
+                    messageInput.value = '';
+                    messageInput.dispatchEvent(new Event('input'));
+                    
+                    // Update last sent time
+                    lastSentTime = now;
+                    localStorage.setItem('lastSentTime', now);
+                    
+                    // Reload stats
+                    loadStats();
+                    
+                    // Success haptic
+                    if (navigator.vibrate) {
+                        navigator.vibrate([100, 50, 100]);
+                    }
+                } else {
+                    throw new Error(data.error || 'Unbekannter Fehler');
+                }
+
+            } catch (error) {
+                console.error('Send error:', error);
+                showToast('❌ ' + error.message, 'error');
+            } finally {
+                // Re-enable button
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<span class="text-2xl">🚀</span><span>Nachricht senden</span>';
+            }
+        });
+
+        // =====================================
+        // 📱 COLLECT DEVICE METADATA
+        // =====================================
+        
+        async function collectMetadata() {
+            const metadata = {
+                battery: null,
+                deviceType: getDeviceType(),
+                browser: getBrowser(),
+                os: getOS(),
+                screenResolution: `${screen.width}x${screen.height}`,
+                language: navigator.language || 'de-DE',
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            };
+
+            // Battery API
+            if ('getBattery' in navigator) {
+                try {
+                    const battery = await navigator.getBattery();
+                    metadata.battery = Math.round(battery.level * 100);
+                } catch (e) {
+                    // Battery API not available
+                }
+            }
+
+            return metadata;
+        }
+
+        function getDeviceType() {
+            const ua = navigator.userAgent;
+            if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+                return "Tablet";
+            }
+            if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
+                return "Mobile";
+            }
+            return "Desktop";
+        }
+
+        function getBrowser() {
+            const ua = navigator.userAgent;
+            if (ua.indexOf("Firefox") > -1) return "Firefox";
+            if (ua.indexOf("SamsungBrowser") > -1) return "Samsung Internet";
+            if (ua.indexOf("Opera") > -1 || ua.indexOf("OPR") > -1) return "Opera";
+            if (ua.indexOf("Edge") > -1) return "Edge";
+            if (ua.indexOf("Chrome") > -1) return "Chrome";
+            if (ua.indexOf("Safari") > -1) return "Safari";
+            return "Unknown";
+        }
+
+        function getOS() {
+            const ua = navigator.userAgent;
+            if (ua.indexOf("Win") > -1) return "Windows";
+            if (ua.indexOf("Mac") > -1) return "MacOS";
+            if (ua.indexOf("Linux") > -1) return "Linux";
+            if (ua.indexOf("Android") > -1) return "Android";
+            if (ua.indexOf("iOS") > -1 || ua.indexOf("iPhone") > -1) return "iOS";
+            return "Unknown";
+        }
+
+        // =====================================
+        // 🎨 TOAST NOTIFICATIONS
+        // =====================================
+        
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            
+            const colors = {
+                success: 'border-green-500/30 text-green-300',
+                error: 'border-red-500/30 text-red-300',
+                warning: 'border-amber-500/30 text-amber-300',
+                info: 'border-blue-500/30 text-blue-300'
+            };
+            
+            toast.classList.add(colors[type] || colors.info);
+            toast.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="text-lg">${getToastIcon(type)}</div>
+                    <div class="font-medium">${message}</div>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function getToastIcon(type) {
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+            return icons[type] || icons.info;
+        }
+
+        // =====================================
+        // ⏱️ RATE LIMIT WARNING
+        // =====================================
+        
+        function showRateLimitWarning(seconds) {
+            rateLimitInfo.classList.remove('hidden');
+            
+            const interval = setInterval(() => {
+                seconds--;
+                document.getElementById('waitTime').textContent = seconds;
+                const progress = (seconds / 30) * 100;
+                document.getElementById('rateLimitProgress').style.width = `${progress}%`;
+                
+                if (seconds <= 0) {
+                    clearInterval(interval);
+                    rateLimitInfo.classList.add('hidden');
+                }
+            }, 1000);
+        }
+
+        // =====================================
+        // 🎬 INIT
+        // =====================================
+        
+        // Load stats on page load
+        loadStats();
+        
+        // Refresh stats every 30 seconds
+        setInterval(loadStats, 30000);
+
+        // Check rate limit on load
+        const now = Date.now();
+        const timeDiff = now - lastSentTime;
+        if (timeDiff < 30000) {
+            const waitTime = Math.ceil((30000 - timeDiff) / 1000);
+            showRateLimitWarning(waitTime);
+        }
+    </script>
+</body>
+</html>

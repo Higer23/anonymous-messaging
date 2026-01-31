@@ -1,0 +1,28 @@
+{
+  "name": "anonymous-messaging-ultra-premium",
+  "version": "2.0.0",
+  "description": "Ultra-Premium deutsches anonymes Nachrichtensystem mit erweiterter Analytik",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod",
+    "build": "vercel build"
+  },
+  "keywords": [
+    "anonymous",
+    "messaging",
+    "serverless",
+    "vercel",
+    "supabase",
+    "german",
+    "analytics"
+  ],
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Claude (Anthropic)",
+  "license": "MIT"
+}
