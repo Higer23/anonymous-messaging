@@ -257,13 +257,13 @@ anonymous-messaging/
 
 - **Hauptseite**: `https://IHR-PROJEKT.vercel.app`
 - **Admin**: `https://IHR-PROJEKT.vercel.app/mesajlar`
-  - Passwort: `19105887638` (ÄNDERN SIE DIES!)
+  - Passwort: (im Code konfiguriert, bitte vor dem Einsatz ändern)
 
 ## 🔒 Sicherheitshinweise
 
 ### ⚠️ WICHTIG: Admin-Passwort ändern!
 
-Das Standard-Passwort `19105887638` muss geändert werden!
+Das Admin-Passwort muss vor dem Einsatz geändert werden!
 
 **Ändern in:**
 - `api/messages.js` (Zeile 3)
